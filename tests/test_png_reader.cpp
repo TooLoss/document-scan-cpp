@@ -1,4 +1,4 @@
-import module_png_reader;
+#include <png_reader/png_reader.h>
 #include <cassert>
 #include <iostream>
 
@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
         uint8_t bit_depth;
         std::string_view filename = argv[1];
 
-        auto image = open_as_png(width, height, filename, colorSpace);
+        auto image = png_reader::open_as_png(width, height, filename, colorSpace, bit_depth);
     } catch (const std::exception& e) {
         assert(false);
     }

@@ -1,2 +1,58 @@
-.idea
-cmake-build-*
+# CMake build files
+build/
+build*/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+install_manifest.txt
+compile_commands.json
+
+# CLion IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Visual Studio (if used)
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.user
+
+# Object files and libraries
+*.o
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.pdb
+*.ilk
+*.suo
+*.obj
+
+# Precompiled headers
+*.gch
+
+# Dependency directories
+dependencies/
+lib/
+bin/
+
+# MinGW/Windows-specific
+*.manifest
+
+# MacOS-specific
+.DS_Store
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*~
