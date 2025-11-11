@@ -5,6 +5,7 @@
 #include <span>
 #include <fstream>
 #include <zlib.h>
+#include <iostream>
 
 bool is_png_file(std::ifstream &file) {
     const std::array<uint8_t, 8> png_signature = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
@@ -17,10 +18,12 @@ bool is_png_file(std::ifstream &file) {
 }
 
 uint32_t read_next_bytes(std::ifstream &file, uint8_t bytes) {
-    char char_value;
-    uint32_t value;
-    file.read(&char_value, 4 * bytes);
-    value = static_cast<uint8_t>(char_value);
+    std::vector<char> buffer(bytes);
+    file.read(buffer.data(), bytes);
+    uint32_t value = 0;
+    for (uint8_t i = 0; i < bytes; i++) {
+        value = (value << 8) | static_cast<uint8_t>(buffer[i]);
+    }
     return value;
 }
 
@@ -37,8 +40,10 @@ void get_bytes_per_pixels(size_t &size, PNGColorSpace color_space, uint8_t bit_d
         case PNGColorSpace::TruecolorAlpha:
             size *= 4;
             break;
-        default:
-            throw std::runtime_error("Unsupported color space");
+        case PNGColorSpace::Grayscale:
+            break;
+        case PNGColorSpace::Palette:
+            break;
     }
 }
 
@@ -64,27 +69,27 @@ void decompress_pixel_value(const std::vector<uint8_t> &input_data, std::vector<
 
 namespace png_reader {
 
-    std::span<uint8_t>
+   std::vector<uint8_t>
     open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space,
                 uint8_t &bit_depth) {
 
         std::ifstream file{std::string(filename), std::ios::binary};
 
-        if (!is_png_file(file) | !file) {
-            throw std::runtime_error("File is not recognized as PNG");
-        }
+        if (!file.good()) throw std::runtime_error("File path is invalid.");
+
+        if (!is_png_file(file)) throw std::runtime_error("File is not recognized as PNG");
 
         static std::vector<uint8_t> pixel_data; // should not be destroyed
 
         while (file) {
-            uint32_t length = read_next_bytes(file, 1);
+            uint32_t length = read_next_bytes(file, 4);
             std::array<char, 4> chunk{};
-            file.read(chunk.data(), 1);
+            file.read(chunk.data(), 4);
 
             if (std::string(chunk.data(), 4) == "IHDR") {
                 // Start of the IHDR section
-                width = read_next_bytes(file, 1);
-                height = read_next_bytes(file, 1);
+                width = read_next_bytes(file, 4);
+                height = read_next_bytes(file, 4);
                 color_space = static_cast<PNGColorSpace>(file.get());
                 bit_depth = file.get();
                 file.seekg(7, std::ios::cur); // skip metadata

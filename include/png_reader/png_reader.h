@@ -13,5 +13,11 @@ enum class PNGColorSpace : uint8_t {
 };
 
 namespace png_reader {
-    std::span<uint8_t> open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space, uint8_t &bit_depth);
+    std::vector<uint8_t> open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space, uint8_t &bit_depth);
 }
+
+class PNGImage {
+private:
+    uint32_t width, height;
+    PNGColorSpace color_space;
+};
