@@ -1,4 +1,4 @@
-#include <png_reader/png_reader.h>
+#include <png_reader.h>
 #include <iostream>
 
 int main() {
@@ -12,7 +12,7 @@ int main() {
         std::cout << "About to open PNG..." << std::endl;
         auto image = png_reader::open_as_png(width, height, filename, colorSpace, bit_depth);
         std::cout << "PNG opened!" << std::endl;
-        std::cout << image.size() << std::endl;
+        std::cout << image.height << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return 1;

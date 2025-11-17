@@ -1,4 +1,4 @@
-#include <png_reader/png_reader.h>
+#include <png_reader.h>
 #include <cstdint>
 #include <fstream>
 #include <vector>
@@ -69,8 +69,7 @@ void decompress_pixel_value(const std::vector<uint8_t> &input_data, std::vector<
 
 namespace png_reader {
 
-   std::vector<uint8_t>
-    open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space,
+    Image open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space,
                 uint8_t &bit_depth) {
 
         std::ifstream file{std::string(filename), std::ios::binary};
@@ -79,7 +78,7 @@ namespace png_reader {
 
         if (!is_png_file(file)) throw std::runtime_error("File is not recognized as PNG");
 
-        static std::vector<uint8_t> pixel_data; // should not be destroyed
+        std::vector<uint8_t> pixel_data;
 
         while (file) {
             uint32_t length = read_next_bytes(file, 4);
@@ -118,6 +117,6 @@ namespace png_reader {
 
         }
 
-        return pixel_data;
+        return Image{std::move(pixel_data)};
     }
 }

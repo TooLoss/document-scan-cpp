@@ -2,9 +2,9 @@
 #include <span>
 #include <string_view>
 #include <vector>
+#include <image.h>
 
 enum class PNGColorSpace : uint8_t {
-    // Color Type
     Grayscale,
     Truecolor,
     Palette,
@@ -12,12 +12,7 @@ enum class PNGColorSpace : uint8_t {
     TruecolorAlpha
 };
 
-namespace png_reader {
-    std::vector<uint8_t> open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space, uint8_t &bit_depth);
-}
 
-class PNGImage {
-private:
-    uint32_t width, height;
-    PNGColorSpace color_space;
-};
+namespace png_reader {
+    Image open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space, uint8_t &bit_depth);
+}
