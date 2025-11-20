@@ -1,13 +1,7 @@
 #include <span>
 #include <cstdint>
+#include <matrix.h>
 
-struct Image {
+class Image : Matrix2D<uint8_t> {
 
-    std::vector<uint8_t> buffer;
-    std::span<uint8_t> image_view;
-
-    uint32_t width;
-    uint32_t height;
-
-    Image(std::vector<uint8_t>&& pixel_data) : buffer(std::move(pixel_data)), image_view(buffer) {};
 };
