@@ -4,6 +4,8 @@
 struct Coord {
     uint32_t x;
     uint32_t y;
+
+    Coord(uint32_t ix, uint32_t iy) : x(ix), y(iy) {};
 }; 
 
 template <typename T>
@@ -30,7 +32,11 @@ public:
      */
     void set_pixel_value(Coord coord, T value);
 
-    void convolve(Matrix2D c_matrix);
+    template <typename U>
+    void convolve(Matrix2D<U> c_matrix);
+
+    uint32_t get_rows() { return rows; }
+    uint32_t get_columns() { return columns; }
 
 
 protected:
