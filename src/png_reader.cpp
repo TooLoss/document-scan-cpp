@@ -67,56 +67,53 @@ void decompress_pixel_value(const std::vector<uint8_t> &input_data, std::vector<
     inflateEnd(&stream);
 }
 
-namespace png_reader {
+Image open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space,
+            uint8_t &bit_depth) {
 
-    Image open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space,
-                uint8_t &bit_depth) {
+    std::ifstream file{std::string(filename), std::ios::binary};
 
-        std::ifstream file{std::string(filename), std::ios::binary};
+    if (!file.good()) throw std::runtime_error("File path is invalid.");
 
-        if (!file.good()) throw std::runtime_error("File path is invalid.");
+    if (!is_png_file(file)) throw std::runtime_error("File is not recognized as PNG");
 
-        if (!is_png_file(file)) throw std::runtime_error("File is not recognized as PNG");
+    std::vector<uint8_t> pixel_data;
 
-        std::vector<uint8_t> pixel_data;
+    while (file) {
+        uint32_t length = read_next_bytes(file, 4);
+        std::array<char, 4> chunk{};
+        file.read(chunk.data(), 4);
 
-        while (file) {
-            uint32_t length = read_next_bytes(file, 4);
-            std::array<char, 4> chunk{};
-            file.read(chunk.data(), 4);
+        if (std::string(chunk.data(), 4) == "IHDR") {
+            // Start of the IHDR section
+            width = read_next_bytes(file, 4);
+            height = read_next_bytes(file, 4);
+            color_space = static_cast<PNGColorSpace>(file.get());
+            bit_depth = file.get();
+            file.seekg(7, std::ios::cur); // skip metadata
 
-            if (std::string(chunk.data(), 4) == "IHDR") {
-                // Start of the IHDR section
-                width = read_next_bytes(file, 4);
-                height = read_next_bytes(file, 4);
-                color_space = static_cast<PNGColorSpace>(file.get());
-                bit_depth = file.get();
-                file.seekg(7, std::ios::cur); // skip metadata
+            size_t bytes_per_pixel = 0;
+            get_bytes_per_pixels(bytes_per_pixel, color_space, bit_depth);
 
-                size_t bytes_per_pixel = 0;
-                get_bytes_per_pixels(bytes_per_pixel, color_space, bit_depth);
-
-                size_t row_size = width * bytes_per_pixel + 1;
-                pixel_data.resize(row_size * height);
-            } else if (std::string(chunk.data(), 4) == "IDAT") {
-                // IDAT contains pixel values
-                std::vector<uint8_t> IDAT_data(length);
-                std::vector<char> IDAT_data_character(length);
-                file.read(IDAT_data_character.data(), length);
-                for (size_t i = 0; i < length; i++) {
-                    IDAT_data[i] = static_cast<uint8_t>(IDAT_data_character[i]);
-                }
-                decompress_pixel_value(IDAT_data, pixel_data);
-                file.seekg(4, std::ios::cur); // skip CRC
-            } else if (std::string(chunk.data(), 4) == "IEND") {
-                break;
-            } else {
-                // Not expected value
-                file.seekg(4, std::ios::cur);
+            size_t row_size = width * bytes_per_pixel + 1;
+            pixel_data.resize(row_size * height);
+        } else if (std::string(chunk.data(), 4) == "IDAT") {
+            // IDAT contains pixel values
+            std::vector<uint8_t> IDAT_data(length);
+            std::vector<char> IDAT_data_character(length);
+            file.read(IDAT_data_character.data(), length);
+            for (size_t i = 0; i < length; i++) {
+                IDAT_data[i] = static_cast<uint8_t>(IDAT_data_character[i]);
             }
-
+            decompress_pixel_value(IDAT_data, pixel_data);
+            file.seekg(4, std::ios::cur); // skip CRC
+        } else if (std::string(chunk.data(), 4) == "IEND") {
+            break;
+        } else {
+            // Not expected value
+            file.seekg(4, std::ios::cur);
         }
 
-        return Image{std::move(pixel_data)};
     }
+
+    return Image{std::move(pixel_data)};
 }

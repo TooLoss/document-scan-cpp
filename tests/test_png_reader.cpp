@@ -10,7 +10,7 @@ int main() {
         std::string_view filename = "E:/Documents/Code/document-scan-cpp/data/example.png";
         std::cout << "Opening file: " << filename << std::endl;
         std::cout << "About to open PNG..." << std::endl;
-        auto image = png_reader::open_as_png(width, height, filename, colorSpace, bit_depth);
+        auto image = open_as_png(width, height, filename, colorSpace, bit_depth);
         std::cout << "PNG opened!" << std::endl;
         std::cout << image.height << std::endl;
     } catch (const std::exception& e) {
