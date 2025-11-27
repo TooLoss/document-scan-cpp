@@ -57,11 +57,29 @@ public:
 
 
 protected:
-    std::vector<int> buffer;
+    std::vector<T> buffer;
 
     uint32_t rows;
     uint32_t columns;
 
     template <typename U>
         T convolve_at(Coord coord, Matrix2D<U>& c_matrix);
+};
+
+
+
+
+class Image : public Matrix2D<uint8_t> {
+
+public:
+    /**
+     * Connected Component Labeling
+     * Detect islands in the image. Islands are separated with background
+     * (ignored_value).
+     *
+     * @param ignored_value
+     * @return matrix with labels
+     */
+    Matrix2D connected_component_labeling(uint8_t ignored_value);
+
 };

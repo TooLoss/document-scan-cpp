@@ -67,8 +67,10 @@ void decompress_pixel_value(const std::vector<uint8_t> &input_data, std::vector<
     inflateEnd(&stream);
 }
 
-Image open_as_png(uint32_t &width, uint32_t &height, std::string_view filename, PNGColorSpace &color_space,
-            uint8_t &bit_depth) {
+Image open_as_png(std::string_view filename, PNGColorSpace &color_space, uint8_t &bit_depth) {
+
+    uint32_t width;
+    uint32_t height;
 
     std::ifstream file{std::string(filename), std::ios::binary};
 
