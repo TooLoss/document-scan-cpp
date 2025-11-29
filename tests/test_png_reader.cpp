@@ -6,23 +6,25 @@
 void test_png_reader(const std::string_view filename) {
 
     PNGColorSpace colorSpace = PNGColorSpace::Grayscale;
-    uint8_t bit_depth;
 
-    Image png_image = std::move(open_as_png(filename, bit_depth));
+    Image png_image = std::move(open_as_png(filename));
 
     std::cout << "Columns " << png_image.get_columns() << std::endl;
     std::cout << "Rows " << png_image.get_rows() << std::endl;
-    std::cout << "bit_depth " << (int)bit_depth << std::endl;
+    std::cout << "bit_depth " << (int)png_image.get_bit_depth()<< std::endl;
 
     std::cout << "index: " << png_image.vector_to_index(Coord(1,1)) << std::endl;
-    std::cout << "Colorspace " << (int)png_image.color_space << std::endl;
-
-    for (int i = 0 ; i < png_image.get_columns()*png_image.get_rows()*3 ; i++) {
-        std::cout << (int)png_image.buffer[i] << std::endl;
-    }
+    std::cout << "Colorspace " << (int)png_image.get_color_space() << std::endl;
 
     assert(png_image.get_columns() == 4);
     assert(png_image.get_rows() == 4);
+
+    for (int i = 0 ; i < png_image.get_columns() ; i++) {
+        for (int j = 0 ; j < png_image.get_rows() ; j++) {
+            std::cout << (int)png_image.get_grayscale_value(Coord(i,j)) << std::endl;
+        }
+    }
+
 }
 
 int main(int argc, char *argv[]) {

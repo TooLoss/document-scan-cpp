@@ -61,43 +61,53 @@ bool Matrix2D<T>::is_in_range(Coord coord) {
 template class Matrix2D<uint8_t>;
 
 
-
-uint32_t Image::vector_to_index(Coord coord) {
-
-    return Matrix2D::vector_to_index(coord);
-
-    switch (color_space) {
-        case PNGColorSpace::Grayscale:
+uint8_t Image::get_channel_count(PNGColorSpace my_color_space) {
+    switch (my_color_space) {
         case PNGColorSpace::Palette:
-            return Matrix2D::vector_to_index(coord);
+        case PNGColorSpace::Grayscale:
+            return 1;
         case PNGColorSpace::GrayscaleAlpha:
-            return 2 * Matrix2D::vector_to_index(coord);
+            return 2;
         case PNGColorSpace::Truecolor:
-            return 3 * Matrix2D::vector_to_index(coord);
+            return 3;
         case PNGColorSpace::TruecolorAlpha:
-            return 4 * Matrix2D::vector_to_index(coord);
-        default:
-            return 0;
-    }
+            return 4;
+    };
+    return 0;
 }
 
-uint8_t Image::get_pixel_value(Coord coord) {
-
-    return Matrix2D::get_pixel_value(coord);
-
-    switch (color_space) {
+uint8_t Image::get_color_channel_count(PNGColorSpace my_color_space) {
+    switch (my_color_space) {
+        case PNGColorSpace::Palette:
         case PNGColorSpace::Grayscale:
-            return Matrix2D::get_pixel_value(coord);
         case PNGColorSpace::GrayscaleAlpha:
-            return 0; // TODO
-        case PNGColorSpace::TruecolorAlpha :
+            return 1;
         case PNGColorSpace::Truecolor:
-            const uint8_t R = values[vector_to_index(coord)];
-            const uint8_t G = values[vector_to_index(coord) + 1];
-            const uint8_t B = values[vector_to_index(coord) + 2];
-            double Grayscale = (0.2 * R + 0.7 * G + 0.07 * B);
-            if (Grayscale > 255) Grayscale = 255.0;
-            return (uint8_t)Grayscale;
-    }
+        case PNGColorSpace::TruecolorAlpha:
+            return 3;
+    };
     return 0;
+}
+
+uint32_t Image::get_grayscale_value(Coord coord) {
+    const uint8_t channel = get_channel_count(color_space);
+    const int8_t colored_channel = get_color_channel_count(color_space);
+    const int32_t pixel_index = channel * vector_to_index(coord);
+
+    if (colored_channel == 0) throw std::runtime_error("Error: colored_channel is 0.");
+
+    int32_t sum{0};
+
+    for (int i = 0 ; i < channel ; i++) {
+
+        if (pixel_index + i >= values.size()) throw std::out_of_range("Error : coordinate out of range.");
+
+        if (i <= colored_channel) {
+            sum += values[pixel_index + i];
+        } else {
+            sum *= values[pixel_index + i]/255;
+        };
+    }
+
+    return static_cast<uint8_t>(sum/colored_channel);
 }

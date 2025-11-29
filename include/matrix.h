@@ -19,6 +19,10 @@ struct Coord {
     bool operator==(int i) const {
         return (this->x == i) && (this->y == i);
     }
+
+    Coord operator*(int i) const {
+        return Coord(this->x * i, this->y * i);
+    }
 };
 
 enum class PNGColorSpace : uint8_t {
@@ -35,13 +39,10 @@ enum class PNGColorSpace : uint8_t {
 template <typename T>
 class Matrix2D {
 public:
-
     Matrix2D(std::vector<T>&& val, uint32_t width, uint32_t height)
         : buffer(std::move(val)), values(buffer), rows(height), columns(width) {};
 
-    std::span<T> values;
-
-    virtual uint32_t vector_to_index(Coord coord);
+    uint32_t vector_to_index(Coord coord);
 
     bool is_in_range(Coord coord);
 
@@ -51,7 +52,7 @@ public:
     * @param coord : x y coordinate to get the pixel from
     * @return T value at x y 
     */
-    virtual T get_pixel_value(Coord coord);
+    T get_pixel_value(Coord coord);
 
     /**
      * Set value of the matrix type at x y coordinates.
@@ -64,15 +65,16 @@ public:
     template <typename U>
         void convolve(Matrix2D<U>& c_matrix);
 
-    uint32_t get_rows() { return rows; }
-    uint32_t get_columns() { return columns; }
+    uint32_t get_rows() const { return rows; }
+    uint32_t get_columns() const { return columns; }
+    std::span<T> get_values() const { return values; }
 
-
-    std::vector<T> buffer;
 protected:
-
     uint32_t rows;
     uint32_t columns;
+
+    std::vector<T> buffer;
+    std::span<T> values;
 
     template <typename U>
         T convolve_at(Coord coord, Matrix2D<U>& c_matrix);
@@ -84,17 +86,18 @@ protected:
 class Image : public Matrix2D<uint8_t> {
 
 public:
-
     using Matrix2D<uint8_t>::Matrix2D;
 
     template <typename U>
-    Image(std::vector<U>&& val, uint32_t width, uint32_t height, PNGColorSpace color)
-    : Matrix2D<uint8_t>(std::move(val), width, height), color_space(color) {};
+    Image(std::vector<U>&& val, uint32_t width, uint32_t height, PNGColorSpace color, uint8_t depth)
+    : Matrix2D<uint8_t>(std::move(val), width, height),
+            color_space(color),
+            bit_depth(depth) {};
 
-    PNGColorSpace color_space;
+    uint8_t get_channel_count(PNGColorSpace my_color_space);
+    uint8_t get_color_channel_count(PNGColorSpace my_color_space);
 
-    uint8_t get_pixel_value(Coord coord) override;
-    uint32_t vector_to_index(Coord coord) override;
+    uint32_t get_grayscale_value(Coord coord);
 
     /**
      * Connected Component Labeling
@@ -105,5 +108,12 @@ public:
      * @return matrix with labels
      */
     Matrix2D connected_component_labeling(uint8_t ignored_value);
+
+    PNGColorSpace get_color_space() const { return color_space; };
+    uint8_t get_bit_depth() const { return bit_depth; };
+
+private:
+    PNGColorSpace color_space;
+    uint8_t bit_depth;
 
 };
