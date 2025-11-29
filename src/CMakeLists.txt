@@ -6,6 +6,7 @@ target_link_libraries(png_reader PRIVATE ZLIB::ZLIB)
 
 add_library(image STATIC
     matrix.cpp
+    image_processing.cpp
 )
 
 target_include_directories(image PUBLIC ${CMAKE_SOURCE_DIR}/include)

@@ -1,6 +1,7 @@
 #include <png_reader.h>
 #include <cassert>
 #include <iostream>
+#include <image_processing.h>
 
 
 void test_png_reader(const std::string_view filename) {
@@ -23,6 +24,13 @@ void test_png_reader(const std::string_view filename) {
         for (int j = 0 ; j < png_image.get_rows() ; j++) {
             std::cout << (int)png_image.get_grayscale_value(Coord(i,j)) << std::endl;
         }
+    }
+
+    ImageProcessing::convert_to_grayscale(png_image);
+    std::span<uint8_t> values = png_image.get_values();
+
+    for (int i = 0 ; i < values.size() ; i++) {
+        std::cout << (int)values[i] << std::endl;
     }
 
 }
