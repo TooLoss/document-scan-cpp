@@ -82,4 +82,15 @@ namespace MatrixProcessing {
         Matrix2D<float> gaussian_matrix = gaussian_filter(size, sigma);
         convolve(matrix, gaussian_matrix);
     }
+
+    template <typename T>
+    void apply_gradient(Matrix2D<T> &matrix) {
+        std::vector<int8_t> sobel_filter = {
+            -1, 0, 1,
+            -1, 0, 1,
+            -1, 0, 1
+        };
+        Matrix2D<int8_t> sobel_matrix{std::move(sobel_filter), 3, 3};
+        convolve(matrix, sobel_filter);
+    }
 }
