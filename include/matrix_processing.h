@@ -1,6 +1,6 @@
 #pragma once
 
-#include <matrix.h>
+#include "../include/matrix.h"
 #include <memory>
 #include <cmath>
 
@@ -47,15 +47,17 @@ namespace MatrixProcessing {
 
     template <typename T, typename U>
     void convolve(Matrix2D<T> &matrix, Matrix2D<U> &c_matrix) {
+        // TODO see if there is other methods to prevent copying
+        Matrix2D<T> cache_matrix = matrix;
         for(int i = 0; i < matrix.get_rows() ; i++) {
             for(int j = 0; j < matrix.get_columns() ; j++) {
                 const Coord pos(i,j);
-                matrix.set_value(pos, convolve_at(matrix, c_matrix, pos));
+                matrix.set_value(pos, convolve_at(cache_matrix, c_matrix, pos));
             }
         }
     }
 
-    inline std::unique_ptr<Matrix2D<float>> gaussian_filter(uint32_t size, float sigma) {
+    inline Matrix2D<float> gaussian_filter(uint32_t size, float sigma) {
         if (sigma <= 0.0f)
             throw std::invalid_argument("Sigma must be positive.");
         if (size <= 0)
@@ -71,13 +73,13 @@ namespace MatrixProcessing {
             const float exp_term = -1 * (var_i + var_j)/(2 * std::pow(sigma, 2));
             gaussian_filter[n] = (1/(2*std::numbers::pi*sigma*sigma)) * std::exp(exp_term);
         }
-        std::unique_ptr<Matrix2D<float>> gaussian_matrix(new Matrix2D{std::move(gaussian_filter), size, size});
+        Matrix2D<float> gaussian_matrix{std::move(gaussian_filter), size, size};
         return gaussian_matrix;
     }
 
     template <typename T>
     void apply_blur(Matrix2D<T> &matrix, uint32_t size, float sigma) {
-        Matrix2D<float> gaussian_matrix = *gaussian_filter(size, sigma);
+        Matrix2D<float> gaussian_matrix = gaussian_filter(size, sigma);
         convolve(matrix, gaussian_matrix);
     }
 }
